@@ -1,0 +1,22 @@
+{
+    "name": "clicalmani/fundation",
+    "description": "Tonka fundation",
+    "type": "library",
+    "require": {
+        "php": ">=8.0"
+    },
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {
+            "Clicalmani\\Fundation\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "clicalmani",
+            "email": "clicalmani@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": false
+}
