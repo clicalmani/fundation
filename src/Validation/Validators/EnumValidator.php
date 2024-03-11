@@ -12,7 +12,8 @@ class EnumValidator extends InputValidator
         return [
             'list' => [
                 'required' => true,
-                'type' => 'array'
+                'type' => 'array',
+                'function' => fn(string $value) => explode(',', $value)
             ]
         ];
     }

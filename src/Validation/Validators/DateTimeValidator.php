@@ -5,8 +5,18 @@ use Clicalmani\Fundation\Validation\InputValidator;
 
 class DateTimeValidator extends InputValidator
 {
+    /**
+     * Validator argument
+     * 
+     * @var string
+     */
     protected string $argument = 'datetime';
 
+    /**
+     * Validator options
+     * 
+     * @return array
+     */
     public function options() : array
     {
         return [
@@ -18,6 +28,13 @@ class DateTimeValidator extends InputValidator
         ];
     }
 
+    /**
+     * Validate input
+     * 
+     * @param mixed &$value Receive input value
+     * @param ?array $options Receive validator options
+     * @return bool
+     */
     public function validate(mixed &$date, ?array $options = [] ) : bool
     {
         $date = $this->parseString($date);

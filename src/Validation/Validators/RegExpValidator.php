@@ -5,7 +5,7 @@ use Clicalmani\Fundation\Validation\InputValidator;
 
 class RegExpValidator extends InputValidator
 {
-    protected string $validator = 'regexp';
+    protected string $argument = 'regexp';
 
     public function options() : array
     {

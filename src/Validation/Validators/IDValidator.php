@@ -1,11 +1,12 @@
 <?php
 namespace Clicalmani\Fundation\Validation\Validators;
 
+use Clicalmani\Flesco\Support\Log;
 use Clicalmani\Fundation\Validation\InputValidator;
 
 class IDValidator extends InputValidator
 {
-    protected string $validator = 'id';
+    protected string $argument = 'id';
 
     public function options() : array
     {
@@ -33,7 +34,10 @@ class IDValidator extends InputValidator
 
         if ( class_exists($model) ) {
             if ( is_array($primaryKey) ) $value = explode(',', $value);
-            return !!$model::find($value);
+            if ($model = $model::find($value)) {
+                return $model->{$primaryKey} == $value;
+            }
+                
         }
 
         return false;

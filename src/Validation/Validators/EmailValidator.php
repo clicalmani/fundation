@@ -5,7 +5,7 @@ use Clicalmani\Fundation\Validation\InputValidator;
 
 class EmailValidator extends InputValidator
 {
-    protected $argument = 'email';
+    protected string $argument = 'email';
     
     public function validate(mixed &$email, ?array $options = []) : bool
     {
