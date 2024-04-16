@@ -14,8 +14,14 @@ trait ParseValidator
         $options = collection( explode('|', $this->signature) )
                         ->filter(fn(string $argument) => ! in_array($argument, array_merge($this->defaultArguments, [$this->argument])))
                         ->map(function(string $option) {
-                            @[$opt, $value] = explode(':', $option);
-                            return [$opt, $value];
+                            $pos = strpos($option, ':');
+                            if ( $pos ) {
+                                $opt = substr($option, 0, $pos);
+                                $value = substr($option, $pos + 1);
+                                return [$opt, $value];
+                            }
+                            
+                            return [$option, null];
                         });
 
         $ret = [];
@@ -23,7 +29,7 @@ trait ParseValidator
         foreach ($options as $option) {
             $ret[$option[0]] = $option[1];
         }
-
+        
         return $ret;
     }
 

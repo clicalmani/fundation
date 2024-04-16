@@ -11,6 +11,7 @@ class Kernel {
     public function validators() : array
     {
         return [
+            \Clicalmani\Fundation\Validation\Validators\BoolValidator::class,
             \Clicalmani\Fundation\Validation\Validators\BooleanValidator::class,
             \Clicalmani\Fundation\Validation\Validators\DateTimeValidator::class,
             \Clicalmani\Fundation\Validation\Validators\DateValidator::class,
@@ -23,6 +24,7 @@ class Kernel {
             \Clicalmani\Fundation\Validation\Validators\NumberValidator::class,
             \Clicalmani\Fundation\Validation\Validators\NumbersValidator::class,
             \Clicalmani\Fundation\Validation\Validators\NumericValidator::class,
+            \Clicalmani\Fundation\Validation\Validators\NumericsValidator::class,
             \Clicalmani\Fundation\Validation\Validators\ObjectValidator::class,
             \Clicalmani\Fundation\Validation\Validators\ObjectsValidator::class,
             \Clicalmani\Fundation\Validation\Validators\RegExpValidator::class,

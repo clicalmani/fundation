@@ -20,7 +20,8 @@ class NumberValidator extends InputValidator
             ],
             'range' => [
                 'required' => false,
-                'type' => 'int'
+                'type' => 'string',
+                'validator' => fn(string $range) => !!preg_match('/^[0-9]+-[0-9]+$/', $range)
             ]
         ];
     }
@@ -29,13 +30,12 @@ class NumberValidator extends InputValidator
     {
         $value = $this->parseInt($value);
 
-        if ( $options['min'] && $value < $options['min'] ) $value = $options['min'];
+        if ( @ $options['min'] && $value < @ $options['min'] ) $value = $options['min'];
 
-        if ( $options['max'] && $value > $options['max'] ) $value = $options['max'];
+        if ( @ $options['max'] && $value > @ $options['max'] ) $value = $options['max'];
 
-        if ( $options['range'] ) {
+        if ( @ $options['range'] ) {
             @[$min, $max] = explode('-', $options['range']);
-
             if ( $value < $min || $value > $max ) return false;
         }
 

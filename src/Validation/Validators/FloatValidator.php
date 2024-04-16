@@ -29,11 +29,11 @@ class FloatValidator extends InputValidator
     {
         $value = $this->parseFloat($value);
 
-        if ( $options['min'] && $value < $options['min'] ) $value = $options['min'];
+        if ( @ $options['min'] && $value < @ $options['min'] ) $value = $options['min'];
 
-        if ( $options['max'] && $value > $options['max'] ) $value = $options['max'];
+        if ( @ $options['max'] && $value > @ $options['max'] ) $value = $options['max'];
 
-        if ( $options['range'] ) {
+        if ( @ $options['range'] ) {
             @[$min, $max] = explode('-', $options['range']);
 
             if ( $value < $min || $value > $max ) return false;

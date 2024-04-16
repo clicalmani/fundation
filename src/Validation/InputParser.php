@@ -11,7 +11,7 @@ trait InputParser
      */
     public function parseInt(mixed $value) : int
     {
-        return tap($value, fn($value) => settype($value, 'integer'));
+        return (int) tap($value, fn($value) => settype($value, 'integer'));
     }
 
     /**

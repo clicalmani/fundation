@@ -26,8 +26,8 @@ class ObjectsValidator extends InputValidator
     {
         $value = $this->parseString($value);
 
-        if ( $options['translate'] ) $value = strtr($value, $options['translate']['from'], $options['translate']['to']);
-        if ( $options['escape'] ) $value = \Clicalmani\Flesco\Support\Str::escape($value);
+        if ( @ $options['translate'] ) $value = strtr($value, $options['translate']['from'], $options['translate']['to']);
+        if ( @ $options['escape'] ) $value = \Clicalmani\Flesco\Support\Str::escape($value);
 
         $value = json_decode( $value );
 

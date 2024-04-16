@@ -29,11 +29,11 @@ class StringValidator extends InputValidator
     {
         $value = $this->parseString( $value );
 
-        if ( $options['length'] && strlen($value) !== $options['length'] ) return false;
+        if ( @ $options['length'] && strlen($value) !== @ $options['length'] ) return false;
         
-        if ( $options['min'] && strlen($value) < $options['min'] ) return false;
+        if ( @ $options['min'] && strlen($value) < @ $options['min'] ) return false;
 
-        if ( $options['max'] && strlen($value) > $options['max'] ) {
+        if ( @ $options['max'] && strlen($value) > @ $options['max'] ) {
             $value = substr($value, 0, $options['max']);
         }
 

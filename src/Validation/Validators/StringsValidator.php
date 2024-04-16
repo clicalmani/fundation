@@ -27,15 +27,15 @@ class StringsValidator extends InputValidator
 
     public function validate(mixed &$value, ?array $options = []) : bool
     {
-        $value = explode(',', $this->parseString( $value ));
+        $value = $this->parseArray( $value );
 
         foreach ($value as $index => $entry) {
 
-            if ( $options['length'] && strlen($entry) !== $options['length'] ) return false;
+            if ( @ $options['length'] && strlen($entry) !== @ $options['length'] ) return false;
         
-            if ( $options['min'] && strlen($entry) < $options['min'] ) return false;
+            if ( @ $options['min'] && strlen($entry) < @ $options['min'] ) return false;
 
-            if ( $options['max'] && strlen($entry) > $options['max'] ) {
+            if ( @ $options['max'] && strlen($entry) > @ $options['max'] ) {
                 $value[$index] = substr($entry, 0, $options['max']);
             }
 

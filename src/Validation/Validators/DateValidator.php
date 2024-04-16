@@ -13,7 +13,7 @@ class DateValidator extends InputValidator
             'format' => [
                 'required' => true,
                 'type' => 'string',
-                'validator' => fn(string $value) => preg_match('/^[a-z-\/]+$/', $value)
+                'validator' => fn(string $value) => preg_match('/^([Ymd-]+)$/', $value)
             ]
         ];
     }

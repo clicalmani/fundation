@@ -8,6 +8,20 @@ class IDValidator extends InputValidator
 {
     protected string $argument = 'id';
 
+    /**
+     * ID model
+     * 
+     * @var string
+     */
+    protected string $model;
+
+    /**
+     * Model primary key
+     * 
+     * @var string|string[]
+     */
+    protected $primaryKey;
+
     public function options() : array
     {
         return [
@@ -29,15 +43,12 @@ class IDValidator extends InputValidator
 
     public function validate(mixed &$value, ?array $options = []) : bool
     {
-        $model = "\\App\\Models\\" . $options['model'];
-        $primaryKey = $options['primary'];
-
-        if ( class_exists($model) ) {
-            if ( is_array($primaryKey) ) $value = explode(',', $value);
-            if ($model = $model::find($value)) {
-                return $model->{$primaryKey} == $value;
-            }
-                
+        $this->model = "\\App\\Models\\" . $options['model'];
+        $this->primaryKey = $options['primary'];
+        
+        if ( class_exists($this->model) ) {
+            if ( is_array($this->primaryKey) ) $value = explode(',', $value);
+            return !! $this->model::find($value);   
         }
 
         return false;
