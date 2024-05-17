@@ -27,7 +27,8 @@ class StringsValidator extends InputValidator
 
     public function validate(mixed &$value, ?array $options = []) : bool
     {
-        $value = $this->parseArray( $value );
+        if (is_string($value)) $value = explode(',', $value);
+        $value = $this->parseArray($value ?? []);
 
         foreach ($value as $index => $entry) {
 

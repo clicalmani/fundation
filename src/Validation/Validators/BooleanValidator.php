@@ -11,7 +11,7 @@ class BooleanValidator extends InputValidator
     {
         if ($value) $value = true;
         if (NULL === $value || (is_numeric($value) && $this->parseInt($value) === 0)) $value = false;
-
+        
         return true;
     }
 }

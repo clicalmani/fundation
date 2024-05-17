@@ -5,7 +5,7 @@ use Clicalmani\Fundation\Validation\InputValidator;
 
 class FloatValidator extends InputValidator
 {
-    protected string $argument = 'number';
+    protected string $argument = 'float';
 
     public function options() : array
     {

@@ -1,7 +1,8 @@
 <?php
 namespace Clicalmani\Fundation\Validation;
 
-use Exception;
+use Clicalmani\Flesco\Providers\InputValidationServiceProvider;
+use Clicalmani\Flesco\Support\Facades\Log;
 
 class InputValidator implements ValidatorInterface
 {
@@ -33,10 +34,10 @@ class InputValidator implements ValidatorInterface
      * 
      */
     private $validated = [];
-
+    
     public function validate(mixed &$value, ?array $options = [] ) : bool
     {
-        throw new \Exception("Validate method must be overriden.");
+        $this->log("Must override %s::%s in %s at line %d.", __CLASS__, __METHOD__, $this::class, __LINE__);
 
         return true;
     }
@@ -85,8 +86,8 @@ class InputValidator implements ValidatorInterface
 
             $this->signature = $sig;
             
-            if ( $this->isRequired() && ! array_key_exists($param, $inputs) ) throw new \Exception("Parameter $param is required.");
-
+            if ( $this->isRequired() && ! array_key_exists($param, $inputs) ) $this->log("Parameter $param is required.");
+            
             if ( array_key_exists($param, $inputs) ) {
                 
                 if ( $this->isNullable() && $inputs[$param] == '' ) {
@@ -101,6 +102,10 @@ class InputValidator implements ValidatorInterface
                  */ 
                 $argument = $this->getArguments()->filter(fn(string $argument) => ! in_array($argument, $this->defaultArguments))->first();
                 
+                $service = new InputValidationServiceProvider;
+                
+                if (FALSE === $service->seemsValidator($argument)) $this->log("$argument is not a valid validator argument.");
+
                 /**
                  * Provided options
                  * 
@@ -113,57 +118,53 @@ class InputValidator implements ValidatorInterface
                  * 
                  * @var static
                  */
-                $validatorClass = ( new \App\Providers\InputValidationProvider )->getValidator($argument);
+                $validatorClass = ( new InputValidationServiceProvider )->getValidator($argument);
                 
-                if ( $validatorClass ) {
+                $validator = new $validatorClass;
 
-                    $validator = new $validatorClass;
+                /**
+                 * Validator options
+                 * 
+                 * @var array
+                 */
+                $voptions = $validator->options();
+                
+                // Check validator options validity.
+                foreach ($voptions as $option => $data) {
 
-                    /**
-                     * Validator options
-                     * 
-                     * @var array
-                     */
-                    $voptions = $validator->options();
+                    if ( !array_key_exists($option, $options) ) continue;
                     
-                    // Check validator options validity.
-                    foreach ($voptions as $option => $data) {
+                    // A required option not provided
+                    if ( @ $data['required'] && ! array_key_exists($option, $options) ) $this->log(sprintf("Option %s is required for %s validator.", $option, $argument));
+                    
+                    // Execute option function
+                    if ( $fn = @ $data['function'] ) $options[$option] = $fn($options[$option]);
 
-                        if ( !array_key_exists($option, $options) ) continue;
+                    // Set option type
+                    if ( @ $data['type'] ) settype($options[$option], $data['type']);
+
+                    // Set array key (for array options)
+                    if ( @ $data['keys'] ) {
                         
-                        // A required option not provided
-                        if ( @ $data['required'] && ! array_key_exists($option, $options) ) throw new \Exception( sprintf("Option %s is required for %s validator.", $option, $argument) );
-                        
-                        // Execute option function
-                        if ( $fn = @ $data['function'] ) $options[$option] = $fn($options[$option]);
+                        $keys = $data['keys'];
+                        $tmp = [];
 
-                        // Set option type
-                        if ( @ $data['type'] ) settype($options[$option], $data['type']);
-
-                        // Set array key (for array options)
-                        if ( @ $data['keys'] ) {
-                            
-                            $keys = $data['keys'];
-                            $tmp = [];
-
-                            foreach ($keys as $i => $key) {
-                                $tmp[$key] = @ $options[$option][$i];
-                            }
-
-                            $options[$option] = $tmp;
+                        foreach ($keys as $i => $key) {
+                            $tmp[$key] = @ $options[$option][$i];
                         }
-                        
-                        // Option validator
-                        if ( !!@$options[$option] && $fn = @ $data['validator'] AND false === $fn($options[$option]) ) throw new \Exception( sprintf("%s is not a valid option %s value for %s validator.", $options[$option], $option, $argument) ); 
+
+                        $options[$option] = $tmp;
                     }
                     
-                    foreach ($options as $option => $value) {
-                        if ( $option && ! array_key_exists($option, $voptions) ) throw new \Exception( sprintf("%s is not a valid %s validator option.", $option, $argument) );
-                    }
-
-                    if ( false === $validator->validate($inputs[$param], $options) ) throw new \Exception( sprintf("Parameter %s is not valid.", $param) );
-
-                } else throw new \Exception("$argument is not a valid validator argument.");
+                    // Option validator
+                    if ( !!@$options[$option] && $fn = @ $data['validator'] AND false === $fn($options[$option]) ) $this->log(sprintf("%s is not a valid option %s value for %s validator.", $options[$option], $option, $argument)); 
+                }
+                
+                foreach ($options as $option => $value) {
+                    if ( $option && ! array_key_exists($option, $voptions) ) $this->log(sprintf("%s is not a valid %s validator option.", $option, $argument));
+                }
+                
+                if ( false === $validator->validate($inputs[$param], $options) ) $this->log(sprintf("Parameter %s is not valid.", $param));
             }
         }
     }
@@ -177,6 +178,37 @@ class InputValidator implements ValidatorInterface
     public function passed(string $param) : void
     {
         $this->validated[] = $param;
+    }
+
+    private function log(string $message)
+    {
+        $is_debug_mode = ( 'true' === strtolower(env('APP_DEBUG')) );
+        
+        if ($is_debug_mode) throw new \Exception($message);
+
+        $backtrace = function(int $index) {
+            $trace = @ debug_backtrace()[$index];
+
+            if (!$trace) return false;
+
+            return ['class' => @ $trace['class'], 'line' => @ $trace['line']];
+        };
+
+        $index = 0;
+
+        while ($trace = $backtrace($index)) {
+            if (in_array($trace['class'], [
+                    __CLASS__, 
+                    \Clicalmani\Database\Factory\Entity::class, 
+                    \Clicalmani\Database\Factory\Models\AbstractModel::class,
+                    \Clicalmani\Database\Factory\Models\Model::class
+                ])) {
+                $index++;
+                continue;
+            }
+            
+            Log::error($message, E_ERROR, $trace['class'], $trace['line']);
+        }
     }
 
     public function __get($name)
