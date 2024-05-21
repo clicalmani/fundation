@@ -1,7 +1,7 @@
 <?php
 namespace Clicalmani\Fundation\Validation\Validators;
 
-use Clicalmani\Flesco\Support\Log;
+use Clicalmani\Fundation\Support\Log;
 use Clicalmani\Fundation\Validation\InputValidator;
 
 class IDValidator extends InputValidator

@@ -31,6 +31,7 @@ class Kernel {
             \Clicalmani\Fundation\Validation\Validators\StringValidator::class,
             \Clicalmani\Fundation\Validation\Validators\StringsValidator::class,
             \Clicalmani\Fundation\Validation\Validators\UriValidator::class,
+            \Clicalmani\Fundation\Validation\Validators\NavigationGuardValidator::class,
         ];
     }
 };

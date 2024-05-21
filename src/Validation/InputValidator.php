@@ -1,8 +1,8 @@
 <?php
 namespace Clicalmani\Fundation\Validation;
 
-use Clicalmani\Flesco\Providers\InputValidationServiceProvider;
-use Clicalmani\Flesco\Support\Facades\Log;
+use Clicalmani\Fundation\Providers\InputValidationServiceProvider;
+use Clicalmani\Fundation\Support\Facades\Log;
 
 class InputValidator implements ValidatorInterface
 {
@@ -34,6 +34,8 @@ class InputValidator implements ValidatorInterface
      * 
      */
     private $validated = [];
+
+    public function __construct(private ?bool $silent = false) {}
     
     public function validate(mixed &$value, ?array $options = [] ) : bool
     {
@@ -76,9 +78,9 @@ class InputValidator implements ValidatorInterface
      * 
      * @param array &$inputs
      * @param array $signatures
-     * @return void
+     * @return bool
      */
-    public function sanitize(array &$inputs, array $signatures) : void
+    public function sanitize(array &$inputs, array $signatures) : bool
     {
         foreach ($signatures as $param => $sig) {
             
@@ -163,10 +165,18 @@ class InputValidator implements ValidatorInterface
                 foreach ($options as $option => $value) {
                     if ( $option && ! array_key_exists($option, $voptions) ) $this->log(sprintf("%s is not a valid %s validator option.", $option, $argument));
                 }
+
+                $success = $validator->validate($inputs[$param], $options);
                 
-                if ( false === $validator->validate($inputs[$param], $options) ) $this->log(sprintf("Parameter %s is not valid.", $param));
+                if ( false === $success ) {
+                    if ( FALSE === $this->silent ) $this->log(sprintf("Parameter %s is not valid.", $param));
+
+                    return false;
+                }
             }
         }
+
+        return true;
     }
 
     /**
@@ -182,6 +192,8 @@ class InputValidator implements ValidatorInterface
 
     private function log(string $message)
     {
+        if ($this->silent) return;
+        
         $is_debug_mode = ( 'true' === strtolower(env('APP_DEBUG')) );
         
         if ($is_debug_mode) throw new \Exception($message);
