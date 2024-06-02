@@ -12,6 +12,7 @@ use Clicalmani\Fundation\Support\Facades\Facade;
  * @method static void pattern(string $param, string $pattern)
  * @method static \Clicalmani\Routing\Validator|\Clicalmani\Routing\Group register(string $method, string $route, mixed $callback, ?bool $bind = true)
  * @method static \Clicalmani\Routing\Group controller(string $class)
+ * @method static \Clicalmani\Routing\Validator|\Clicalmani\Routing\Group get(string $route, mixed $action = null)
  */
 class Route extends Facade
 {}

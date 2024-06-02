@@ -6,7 +6,7 @@ abstract class RouteTPS
     /**
      * Current route
      * 
-     * @var string
+     * @var \Clicalmani\Routing\Route
      */
     protected $route;
 

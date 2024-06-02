@@ -101,11 +101,9 @@ class Request implements RequestInterface, \ArrayAccess, \JsonSerializable
      */
     public function __get($property)
     {
-        $vars = static::all();
-        $this->validator->sanitize($vars, $this->signatures ?? []);
-        $this->validator->passed($property);
+        $this->validator->sanitize($_REQUEST, $this->signatures ?? []);
         
-        return @ $vars[$property];
+        return @ $_REQUEST[$property];
     }
 
     /**

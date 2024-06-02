@@ -11,8 +11,7 @@ if ( ! function_exists( 'root_path' ) ) {
      * @return string
      */
     function root_path(?string $subdirectory = '') : string {
-        global $root_path;
-        if (!$root_path) $root_path = $_SERVER['DOCUMENT_ROOT'];
+        $root_path = dirname( __DIR__, 4 );
         if (!preg_match('/.*\/$/', $root_path)) $root_path = $root_path . '/';
         return $root_path . trim($subdirectory, '/\\');
     }

@@ -101,6 +101,10 @@ class RequestController extends HttpRequest
 		if ($route = (new \Clicalmani\Routing\Builder)->build()) {
 			
 			$this->route      = $route;
+
+			// Redirect
+			if ($route->redirect) $this->redirect();
+
 			$this->controller = $route->action;
 			
 			Cache::currentRoute($route);
@@ -195,6 +199,7 @@ class RequestController extends HttpRequest
 				}
 			}
 			
+			/** @var \Clicalmani\Fundation\Http\Requests\Request */
 			$request = new $requestClass;
 			$this->validateRequest(new $request);
 		}
@@ -509,5 +514,24 @@ class RequestController extends HttpRequest
 	public function test(string $action)
 	{
 		return with( new TestController )->new($action);
+	}
+
+	private function redirect()
+	{
+		/** @var int */
+		$redirect_code = $this->route->redirect;
+
+		switch($redirect_code) {
+			case 302: response()->status($redirect_code, 'FOUND', 'Temporary Unavailable'); break;
+			case 301: response()->status($redirect_code, 'PAGE_MOVED_PERMANENTLY', 'Page Moved Permenently'); break;
+			case 308: response()->status($redirect_code, 'PERMANENT_REDIRECT', 'Permanent Redirect'); break;
+			case 303: response()->status($redirect_code, 'SEE_OTHER', 'Redirect'); break;
+			case 307: response()->status($redirect_code, 'PERMANENTLY_REDIRECT', 'Temporary Unavailable'); break;
+			case 300: response()->status($redirect_code, 'MULTIPLE_CHOICES', 'Multiple Choices'); break;
+			case 304: response()->status($redirect_code, 'NOT_MODIFIED', 'Not Modified'); break;
+			default: response()->status($redirect_code); break;
+		}
+		
+		exit;
 	}
 }

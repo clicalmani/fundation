@@ -1,6 +1,7 @@
 <?php
 namespace Clicalmani\Fundation\Validation\Validators;
 
+use Clicalmani\Database\DB;
 use Clicalmani\Fundation\Support\Log;
 use Clicalmani\Fundation\Validation\InputValidator;
 
@@ -47,8 +48,15 @@ class IDValidator extends InputValidator
         $this->primaryKey = $options['primary'];
         
         if ( class_exists($this->model) ) {
+            
             if ( is_array($this->primaryKey) ) $value = explode(',', $value);
-            return !! $this->model::find($value);   
+
+            /** @var \Clicalmani\Database\Factory\Models\Model */
+            $instance = $this->model::find($value);
+
+            if ($instance->get()->isEmpty()) return false;
+
+            return true;  
         }
 
         return false;

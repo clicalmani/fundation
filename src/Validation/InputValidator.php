@@ -85,7 +85,7 @@ class InputValidator implements ValidatorInterface
         foreach ($signatures as $param => $sig) {
             
             if ( in_array($param, $this->validated) ) continue;
-
+            
             $this->signature = $sig;
             
             if ( $this->isRequired() && ! array_key_exists($param, $inputs) ) $this->log("Parameter $param is required.");
@@ -166,13 +166,17 @@ class InputValidator implements ValidatorInterface
                     if ( $option && ! array_key_exists($option, $voptions) ) $this->log(sprintf("%s is not a valid %s validator option.", $option, $argument));
                 }
 
-                $success = $validator->validate($inputs[$param], $options);
+                $value = $inputs[$param];
+                $success = $validator->validate($value, $options);
                 
                 if ( false === $success ) {
                     if ( FALSE === $this->silent ) $this->log(sprintf("Parameter %s is not valid.", $param));
 
                     return false;
                 }
+
+                $inputs[$param] = $value;
+                $this->passed($param);
             }
         }
 

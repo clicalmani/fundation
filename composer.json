@@ -3,7 +3,11 @@
     "description": "Tonka fundation",
     "type": "library",
     "require": {
-        "php": ">=8.0"
+        "php": ">=8.0",
+        "phpmailer/phpmailer": ">=6.7",
+        "vlucas/phpdotenv": ">=5.5.0",
+        "nesbot/carbon": "^2.16",
+		"joshtronic/php-loremipsum": "^2.1.0"
     },
     "license": "proprietary",
     "autoload": {
