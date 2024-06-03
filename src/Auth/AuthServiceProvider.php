@@ -159,6 +159,6 @@ class AuthServiceProvider
 
     public function boot()
     {
-        static::$config = require_once dirname( __DIR__, 5) . '/config/auth.php';
+        static::$config = require dirname( __DIR__, 5) . '/config/auth.php';
     }
 }

@@ -27,7 +27,7 @@ class RouteNotFoundException extends \Exception
 		 */
 		else {
 			if (Route::isApi()) response()->status(404, 'NOT_FOUND', 'Not Found');	
-			else (new Response)->notFound();
+			else response()->notFound();
 
 			exit;
 		}

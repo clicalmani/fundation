@@ -54,7 +54,7 @@ class IDValidator extends InputValidator
             /** @var \Clicalmani\Database\Factory\Models\Model */
             $instance = $this->model::find($value);
 
-            if ($instance->get()->isEmpty()) return false;
+            if (NULL === $this->model::find($value)) return false;
 
             return true;  
         }

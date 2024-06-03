@@ -23,9 +23,9 @@ use Clicalmani\Routing\Cache;
  $root_path = dirname( __DIR__, 6 );
 
  \Clicalmani\Fundation\Providers\ServiceProvider::init(
-	 require_once $root_path . '/config/app.php',
-	 require_once $root_path . '/bootstrap/kernel.php',
-	 require_once $root_path . '/app/Http/kernel.php'
+	 require $root_path . '/config/app.php',
+	 require $root_path . '/bootstrap/kernel.php',
+	 require $root_path . '/app/Http/kernel.php'
  );
 
 /**
@@ -112,10 +112,10 @@ class RequestController extends HttpRequest
 			if ( $response_code = $route->isAuthorized($request) AND 200 !== $response_code) {
 				
 				switch($response_code) {
-					case 401: response()->status($response_code, 'UNAUTHORIZED_REQUEST_ERROR', 'Request Unauthorized'); break;
-					case 403: response()->status($response_code, 'FORBIDEN', 'Request Forbiden'); break;
-					case 404: response()->status($response_code, 'NOT FOUND', 'Not Found'); break;
-					default: response()->status($response_code); break;
+					case 401: $this->sendStatus($response_code, 'UNAUTHORIZED_REQUEST_ERROR', 'Request Unauthorized'); break;
+					case 403: $this->sendStatus($response_code, 'FORBIDEN', 'Request Forbiden'); break;
+					case 404: $this->sendStatus($response_code, 'NOT FOUND', 'Not Found'); break;
+					default: $this->sendStatus($response_code, 'UNKNOW', 'Unknow'); break;
 				}
 				
 				exit;
@@ -522,16 +522,24 @@ class RequestController extends HttpRequest
 		$redirect_code = $this->route->redirect;
 
 		switch($redirect_code) {
-			case 302: response()->status($redirect_code, 'FOUND', 'Temporary Unavailable'); break;
-			case 301: response()->status($redirect_code, 'PAGE_MOVED_PERMANENTLY', 'Page Moved Permenently'); break;
-			case 308: response()->status($redirect_code, 'PERMANENT_REDIRECT', 'Permanent Redirect'); break;
-			case 303: response()->status($redirect_code, 'SEE_OTHER', 'Redirect'); break;
-			case 307: response()->status($redirect_code, 'PERMANENTLY_REDIRECT', 'Temporary Unavailable'); break;
-			case 300: response()->status($redirect_code, 'MULTIPLE_CHOICES', 'Multiple Choices'); break;
-			case 304: response()->status($redirect_code, 'NOT_MODIFIED', 'Not Modified'); break;
-			default: response()->status($redirect_code); break;
+			case 302: $this->sendStatus($redirect_code, 'FOUND', 'Temporary Unavailable'); break;
+			case 301: $this->sendStatus($redirect_code, 'PAGE_MOVED_PERMANENTLY', 'Page Moved Permenently'); break;
+			case 308: $this->sendStatus($redirect_code, 'PERMANENT_REDIRECT', 'Permanent Redirect'); break;
+			case 303: $this->sendStatus($redirect_code, 'SEE_OTHER', 'Redirect'); break;
+			case 307: $this->sendStatus($redirect_code, 'PERMANENTLY_REDIRECT', 'Temporary Unavailable'); break;
+			case 300: $this->sendStatus($redirect_code, 'MULTIPLE_CHOICES', 'Multiple Choices'); break;
+			case 304: $this->sendStatus($redirect_code, 'NOT_MODIFIED', 'Not Modified'); break;
+			default: $this->sendStatus($redirect_code, 'UNKNOW', 'Unknow'); break;
 		}
 		
+		exit;
+	}
+
+	private function sendStatus(int $code, string $status_code, string $message)
+	{
+		if (Route::isApi()) response()->status($code, $status_code, $message);
+		else response()->send($code);
+
 		exit;
 	}
 }

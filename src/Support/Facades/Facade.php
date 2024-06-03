@@ -40,6 +40,10 @@ class Facade
         if ( $class === \Clicalmani\Fundation\Routing\Route::class )
             return \Clicalmani\Routing\Routing::class;
 
+        if ( is_subclass_of($class, \Clicalmani\Fundation\Http\Requests\RequestController::class) ) 
+            return \Clicalmani\Fundation\Logic\Internal\RequestController::class;
+            
+
         $class = "Clicalmani\Fundation\Logic\Internal\\" . substr($class, strrpos($class, "\\") + 1);
 
         if ( class_exists($class) ) return $class;

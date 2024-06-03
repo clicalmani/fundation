@@ -2,34 +2,71 @@
 namespace Clicalmani\Fundation\Test\Controllers;
 
 use Clicalmani\Database\Factory\Sequence;
+use Clicalmani\Fundation\Auth\EncryptionServiceProvider;
 use Clicalmani\Fundation\Http\Requests\Request;
-use Clicalmani\Fundation\Test\TestCase;
+use Clicalmani\Fundation\Test\TestInterface;
 
-abstract class TestController extends TestCase
+abstract class TestController implements TestInterface
 {
     /**
-     * User model class
+     * Request controller
      * 
-     * @var \Clicalmani\Database\Factory\Models\Model Object
+     * @var \Clicalmani\Fundation\Http\Requests\RequestController
      */
     protected $controller;
 
-    private $action, 
-            $override = [], 
-            $user, 
-            $counter = 1,
-            $hash,
-            $headers;
+    /**
+     * Holds the current action to be tested.
+     * 
+     * @var string
+     */
+    private $action;
+
+    /**
+     * Holds the request parameters to be used for the test.
+     * 
+     * @var array
+     */
+    private $parameters = [];
+
+    /**
+     * Holds the fake test user if test should
+     * be driven in a user environment.
+     * 
+     * @var int
+     */
+    private $user;
+
+    /**
+     * Holds the number of time to repeat the test.
+     * 
+     * @var int
+     */
+    private $counter = 1;
+    
+    /**
+     * Holds parameters hash.
+     * 
+     * @var string|\Clicalmani\Database\Factory\Sequence
+     */
+    private $hash;
+
+    /**
+     * Holds the request headers.
+     * 
+     * @var array|\Clicalmani\Database\Factory\Sequence
+     */
+    private $headers;
 
     /**
      * Merges parameters
      * 
-     * @param array $parameters [Optional]
+     * @param ?array $parameters
      * @return array 
      */
     private function merge(?array $parameters = []) : array
     {
-        return array_merge($this->override, $parameters);
+        return array_merge($this->parameters, $parameters);
     }
 
     /**
@@ -40,11 +77,11 @@ abstract class TestController extends TestCase
      */
     private function override(?array $parameters = [])
     {
-        $this->override = $this->merge($parameters);
+        $this->parameters = $this->merge($parameters);
         $parameters = $this->{$this->action}();
         
-        foreach ($this->override as $attribute => $value) {
-            $parameters[$attribute] = $value;
+        foreach ($this->parameters as $key => $value) {
+            $parameters[$key] = $value;
         }
 
         return $parameters;
@@ -57,9 +94,10 @@ abstract class TestController extends TestCase
      */
     private function setHash() : void
     {
+        $hash_parameter = EncryptionServiceProvider::hashParameter();
         if ($this->hash instanceof Sequence) {
-            $this->override( ['hash' => with( new Request )->createParametersHash( call($this->hash) )]);
-        } else $this->override( ['hash' => $this->hash] );
+            $this->override( [$hash_parameter => create_parameters_hash( call($this->hash) )]);
+        } else $this->override( [$hash_parameter => $this->hash] );
     }
 
     /**
@@ -85,10 +123,10 @@ abstract class TestController extends TestCase
     }
 
     /**
-     * Manipulate factory states
+     * Manipulate the factory state
      * 
      * @param callable $callback A callable function that receive default attributes and return the 
-     * attributes to override.
+     * attributes to override by.
      * @return static
      */
     public function state(?callable $callback) : static
@@ -98,32 +136,32 @@ abstract class TestController extends TestCase
     }
 
     /**
-     * Request user
+     * Provides a user for the test.
      * 
-     * @param callable $param A callable function to return the request user id or an integer value.
+     * @param int|\Clicalmani\Database\Factory\Sequence $param
      * @return static
      */
-    public function user(Sequence|int $param) : static
+    public function user(int|Sequence $param) : static
     {
         if ( is_int($param) ) $this->user = (int) $param;
-        elseif ( $param instanceof Sequence ) $this->user = $param;
+        elseif ( $param instanceof Sequence ) $this->user = $param();
         return $this;
     }
 
     /**
-     * Repeat the seed operation n times.
+     * Repeat the test n times.
      * 
-     * @param int $num Counter
-     * @return $this
+     * @param int $n Counter
+     * @return static
      */
-    public function count($num = 1) : static
+    public function count($n = 1) : static
     {
-        $this->counter = $num;
+        $this->counter = $n;
         return $this;
     }
 
     /**
-     * Make test
+     * Make the test
      * 
      * @return void
      */
@@ -162,17 +200,16 @@ abstract class TestController extends TestCase
                     $request->test_user_id = call( $this->user );
                 } else $request->test_user_id = $this->user;
             }
-
-            print_r( with( new $this->controller )
-                    ->invokeControllerMethod($this->controller, $this->action) );
+            
+            print_r( $this->controller::invokeControllerMethod($this->controller, $this->action) );
             if ($num < $this->counter) echo "\n";
         }
     }
 
     /**
-     * Create hash parameter
+     * Provides a hash parameter for the request.
      * 
-     * @param callable $callback
+     * @param array|\Clicalmani\Database\Factory\Sequence $parameters
      * @return static
      */
     public function hash(Sequence|array $parameters) : static
@@ -183,7 +220,7 @@ abstract class TestController extends TestCase
     }
 
     /**
-     * Set header
+     * Set a request header.
      * 
      * @param string $name
      * @param string $value
@@ -198,7 +235,7 @@ abstract class TestController extends TestCase
     /**
      * Set request headers
      * 
-     * @param Sequence|array $headers
+     * @param array|\Clicalmani\Database\Factory\Sequence $headers
      * @return static
      */
     public function headers(Sequence|array $headers) : static

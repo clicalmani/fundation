@@ -10,6 +10,7 @@ namespace Clicalmani\Fundation\Http\Response;
 class HttpResponseHelper 
 {
     use JsonResponse;
+    use WebResponse;
     
     /**
      * Send a status code
