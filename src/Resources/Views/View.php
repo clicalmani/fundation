@@ -3,7 +3,7 @@ namespace Clicalmani\Fundation\Resources\Views;
 
 use Clicalmani\Fundation\Sandbox\Sandbox;
 
-class View 
+class View
 {
     /**
      * Render a view
