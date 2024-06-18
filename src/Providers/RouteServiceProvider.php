@@ -61,7 +61,7 @@ class RouteServiceProvider extends ServiceProvider
         if ( Route::isApi() ) {
             $this->setHeaders();
         } else $this->storeCSRFToken();
-
+        
         $callback();
 
         Record::clear();

@@ -425,7 +425,78 @@ if ( ! function_exists('mail_smtp') ) {
      */
     function mail_smtp(array $to, array $from, string $subject, string $body, ?array $options = [])
     {
-        return ( new \Clicalmani\Fundation\Mail\MailSMTP )->send();
+        $mail = new \Clicalmani\Fundation\Messenger\MailSMTP;
+
+        if (@ $options['attachments'])
+            foreach ($options['attachments'] as $attachment) {
+
+                $name = (string) @ $attachment['name'] ?? '';
+                $encoding = array_key_exists('encoding', $attachment) ? (string)$attachment['encoding'] : \PHPMailer\PHPMailer\PHPMailer::ENCODING_BASE64;
+                $type = array_key_exists('type', $attachment) ? (string) $attachment['type'] : '';
+                $disposition = array_key_exists('disposition', $attachment) ? (string)$attachment['disposition'] : 'attachment';
+
+                switch(@$attachment['method']) {
+                    case 'file': 
+                        $mail->addAttachment(
+                            (string) @ $attachment['path'],
+                            $name,
+                            $encoding,
+                            $type,
+                            $disposition
+                        ); 
+                        break;
+
+                    case 'inline': 
+                        $mail->addStringAttachment(
+                            (string) @ $attachment['string'],
+                            (string) @ $attachment['filename'],
+                            $encoding,
+                            $type,
+                            $disposition
+                        ); 
+                        break;
+
+                    case 'embed': 
+                        $mail->addEmbeddedImage(
+                            (string) @ $attachment['path'],
+                            (string) @ $attachment['cid'],
+                            $name,
+                            $encoding,
+                            $type,
+                            $disposition
+                        ); 
+                        break;
+                }
+            }
+
+        if (@ $options['headers'])
+            foreach ($options['headers'] as $header) {
+                $mail->addCustomHeader((string) @ $header['name'], (string) @ $header['value']);
+            }
+
+        $mail->setSubject($subject);
+        $mail->setBody($body);
+        $mail->setFrom($from['email'], $from['name']);
+
+        foreach ($to as $address) {
+            $mail->addAddress($address['email'], $address['name']);
+        }
+
+		if (@ $options['cc']) {
+            foreach ($options['cc'] as $cc) {
+                $mail->addCC($cc['email'], $cc['name']);
+            }
+		}
+
+		if (@ $options['bc']) {
+            foreach ($options['bc'] as $bc) {
+                $mail->addBC($bc['email'], $bc['name']);
+            }
+		}
+
+		$mail->isHTML(true);
+        
+        return $mail->send();
     }
 }
 

@@ -6,9 +6,7 @@
         "php": ">=8.0",
         "vlucas/phpdotenv": ">=5.5.0",
         "nesbot/carbon": "^2.16",
-        "twig/twig": "^3.0",
-        "symfony/mailer": ">=7.1.0",
-        "symfony/messenger": ">=7.1.0"
+        "twig/twig": "^3.0"
     },
     "license": "proprietary",
     "autoload": {
