@@ -44,7 +44,7 @@ trait InputParser
      */
     public function parseString(mixed $value) : string
     {
-        return tap($value, fn($value) => settype($value, 'string'));
+        return tap((string)$value, fn(string $value) => settype($value, 'string'));
     }
 
     /**

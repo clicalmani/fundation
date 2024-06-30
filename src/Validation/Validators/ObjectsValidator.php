@@ -25,13 +25,13 @@ class ObjectsValidator extends InputValidator
     public function validate(mixed &$value, ?array $options = []) : bool
     {
         $value = $this->parseString($value);
-
+        
         if ( @ $options['translate'] ) $value = strtr($value, $options['translate']['from'], $options['translate']['to']);
-        if ( @ $options['escape'] ) $value = \Clicalmani\Fundation\Support\Str::escape($value);
+        if ( @ $options['escape'] ) $value = \Clicalmani\Fundation\Support\Facades\Str::escape($value);
 
         $value = json_decode( $value );
-
-        if ( JSON_ERROR_NONE !== json_last_error() ) return false;
+        
+        if ( JSON_ERROR_NONE !== json_last_error() OR !is_iterable($value) ) return false;
 
         foreach ($value as $obj) {
             if ( ! is_object($obj) ) return false;

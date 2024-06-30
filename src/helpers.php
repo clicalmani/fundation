@@ -265,7 +265,7 @@ if ( ! function_exists('request') ) {
      * @param ?string $param
      * @return mixed
      */
-    function request(?string $param = '') : mixed {
+    function request(?string $param = '', ?string $value = null) : mixed {
 
         if ('' === $param) {
             return \Clicalmani\Fundation\Http\Requests\Request::all(); 
@@ -274,7 +274,8 @@ if ( ! function_exists('request') ) {
         $request = \Clicalmani\Fundation\Http\Requests\Request::currentRequest() ?? (object) \Clicalmani\Fundation\Http\Requests\Request::all();
 
         if ( $request ) {
-            return @$request->{$param};
+            if ($value) @$request->{$param} = $value;
+            else return @$request->{$param};
         }
 
         return null;

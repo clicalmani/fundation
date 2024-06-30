@@ -190,7 +190,7 @@ class RequestController extends HttpRequest
 				try {
 					return $this->bindResource($requestClass, $controllerClass, $method);
 				} catch(ModelNotFoundException $e) {
-
+					
 					if ( $callback = $this->route->missing() ) {
 						return $callback();
 					}

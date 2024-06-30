@@ -76,7 +76,7 @@ class TemplateLoader implements LoaderInterface
 
         if (isset($this->errorCache[$name])) return null;
 
-        $template_path = resources_path("/views/$name.template.php");
+        $template_path = resources_path("/views/$name.html");
 
         if (file_exists($template_path)) {
             return $this->cache[$name] = $template_path;

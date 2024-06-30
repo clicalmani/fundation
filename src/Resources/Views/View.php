@@ -14,6 +14,6 @@ class View
      */
     public static function render(string $template, ?array $vars = []) : mixed
     {
-        return ( new \Twig\Environment(new TemplateLoader, $vars) )->render($template);
+        return ( new \Twig\Environment(new TemplateLoader, []) )->render($template, $vars);
     }
 }

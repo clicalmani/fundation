@@ -13,6 +13,7 @@ use Clicalmani\Fundation\Support\Facades\Facade;
  * @method static \Clicalmani\Routing\Validator|\Clicalmani\Routing\Group register(string $method, string $route, mixed $callback, ?bool $bind = true)
  * @method static \Clicalmani\Routing\Group controller(string $class)
  * @method static \Clicalmani\Routing\Validator|\Clicalmani\Routing\Group get(string $route, mixed $action = null)
+ * @method static \Clicalmani\Routing\Resource apiResource(mixed $resource, ?string $controller = null, ?array $actions = [])
  */
 class Route extends Facade
 {}

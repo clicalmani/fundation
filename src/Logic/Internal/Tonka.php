@@ -376,6 +376,7 @@ class Tonka
          */
         foreach (new \RecursiveIteratorIterator($filter) as $file) {
             $modelClass = "App\\" . substr($file->getPathname(), strlen( root_path() ) + 4);
+            $modelClass = str_replace('/', '\\', $modelClass);
             $modelClass = substr($modelClass, 0, strlen($modelClass) - 4);
 
             $model = new $modelClass;
