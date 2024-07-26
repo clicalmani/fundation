@@ -3,9 +3,10 @@ namespace Clicalmani\Fundation\Sandbox;
 
 class Sandbox
 {
-    static function eval($exec, $args) {
+    private static $tmp_name = '__.php';
+
+    public static function eval($exec, $args) {
         $args     = serialize($args);
-        $tmp_name = '__.php';
 
         $content = <<<EVAL
         <?php
@@ -19,8 +20,27 @@ class Sandbox
         DELIMITER;
         EVAL;
         
-        file_put_contents(sys_get_temp_dir() . '/' . $tmp_name, $content);
+        return self::getResult($content);
+    }
 
-        return include sys_get_temp_dir() . '/' . $tmp_name;
+    /**
+     * Evaluate a PHP operation
+     * 
+     * @param string $operation
+     * @return mixed
+     */
+    public static function calc(string $operation) : mixed
+    {
+        $content = <<<EVAL
+        <?php return $operation; ?>
+        EVAL;
+
+        return self::getResult($content);
+    }
+
+    private static function getResult(string $content)
+    {
+        file_put_contents(sys_get_temp_dir() . '/' . static::$tmp_name, $content);
+        return include sys_get_temp_dir() . '/' . static::$tmp_name;
     }
 }

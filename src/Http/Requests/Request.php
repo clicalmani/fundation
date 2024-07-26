@@ -271,7 +271,7 @@ class Request implements RequestInterface, \ArrayAccess, \JsonSerializable
      */
     public function checkCSRFToken() : bool
     {
-        return @ $this->{'csrf-token'} === csrf();
+        return @ $this->{'csrf-token'} === csrf_token();
     }
 
     /**
@@ -280,11 +280,11 @@ class Request implements RequestInterface, \ArrayAccess, \JsonSerializable
      * @param array $params
      * @return string
      */
-    public function createParametersHash($params) : string
+    public function createParametersHash(array $params) : string
     {
         return tap(
             EncryptionServiceProvider::createParametersHash($params), 
-            fn(string $hash) => $_REQUEST['hash'] = $hash
+            fn(string $hash) => $_REQUEST[\Clicalmani\Fundation\Auth\EncryptionServiceProvider::hashParameter()] = $hash
         );
     }
 
@@ -444,7 +444,7 @@ class Request implements RequestInterface, \ArrayAccess, \JsonSerializable
      */
     public function where(?array $exclude = []) : array
     {
-        $exclude[] = 'hash'; // Default
+        $exclude[] = \Clicalmani\Fundation\Auth\EncryptionServiceProvider::hashParameter(); // Default
         $filters = [];
 
         if ( request() ) {

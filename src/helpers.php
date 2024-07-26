@@ -154,14 +154,14 @@ if ( ! function_exists( 'current_route' ) ) {
     }
 }
 
-if ( ! function_exists( 'csrf' ) ) {
+if ( ! function_exists( 'csrf_token' ) ) {
 
     /**
      * Get CSRF token
      * 
      * @return mixed
      */
-    function csrf() : mixed {
+    function csrf_token() : mixed {
         if ( isset($_SESSION['csrf-token']) ) {
             return $_SESSION['csrf-token'];
         }

@@ -52,7 +52,7 @@ class Tonka
         /** @var \Clicalmani\XPower\XDTNodeList[] */
         $nodes = [];
 
-        foreach ($xdt->getDocumentRootElement()->children() as $node) {
+        foreach ($xdt->getDocumentRootElement()->children('entity') as $node) {
             $node = $xdt->parse($node);
             $nodes[] = $node;
         }
@@ -84,7 +84,7 @@ class Tonka
         /** @var \Clicalmani\XPower\XDTNodeList[] */
         $nodes = [];
 
-        foreach ($xdt->getDocumentRootElement()->children() as $node) {
+        foreach ($xdt->getDocumentRootElement()->children('entity') as $node) {
             $node = $xdt->parse($node);
             $nodes[] = $node;
         }
@@ -110,8 +110,8 @@ class Tonka
     {
         $this->clearDB($filename);
         $this->migrate($filename);
-
-        if (TRUE === $seed) $this->seed();
+        
+        if (TRUE === $seed) $this->seed(null, $filename);
 
         if (TRUE === $execute_routines) {
             $this->routineFunctions();
@@ -159,13 +159,16 @@ class Tonka
      * Seed the default database
      * 
      * @param ?string $class
+     * @param ?string $filename Migration file
+     * @return bool
      */
-    public function seed(?string $class = null) : bool
+    public function seed(?string $class = null, ?string $filename = null) : bool
     {
         if (NULL !== $class) {
             require_once database_path("/seeders/$class.php");
 
-            $seeder = new $class;
+            $classNs = "\Database\Seeders\\$class";
+            $seeder = new $classNs;
 
             $this->writeln('Running ' . $class);
 
@@ -179,35 +182,25 @@ class Tonka
 
             return false;
         }
+        
+        if (NULL === $filename) return false;
+
+        $xdt = xdt();
+        $xdt->setDirectory(database_path('/migrations'));
+        $xdt->connect($filename, true, true);
 
         try {
-            $seeders_dir = new \RecursiveDirectoryIterator( database_path('/seeders') );
-            $filter = new RecursiveFilter($seeders_dir);
-            $filter->setPattern("\\.php$");
-
-            $this->writeln('Seeding the database');
-
-            foreach (new \RecursiveIteratorIterator($filter) as $file) { 
-                $pathname = $file->getPathname();
-
-                if($file->isFile()) {
-                    $filename = $file->getFileName();
-                    $class = substr($filename, 0, strlen($filename) - 4); 
-                    
-                    if(is_readable($pathname)) {
-                        require database_path("/seeders/$class.php");
-
-                        $classNs = "\Database\Seeders\\$class";
-                        $seeder = new $classNs;
-
-                        $this->writeln('Running ' . $class);
-
-                        if ( $this->runSeed($seeder) ) {
-                            $this->writeln('success');
-                        } else {
-                            $this->writeln('failure');
-                        }
-                    }
+            foreach ($xdt->getDocumentRootElement()->children('seeder') as $node) {
+                $node = $xdt->parse($node);
+                $classNs = $node->attr('name');
+                $seeder = new $classNs;
+    
+                $this->writeln('Running ' . $classNs);
+    
+                if ( $this->runSeed($seeder) ) {
+                    $this->writeln('success');
+                } else {
+                    $this->writeln('failure');
                 }
             }
 
@@ -217,6 +210,44 @@ class Tonka
             $this->writeln($e->getMessage(), false);
             return false;
         }
+
+        // try {
+        //     $seeders_dir = new \RecursiveDirectoryIterator( database_path('/seeders') );
+        //     $filter = new RecursiveFilter($seeders_dir);
+        //     $filter->setPattern("\\.php$");
+
+        //     $this->writeln('Seeding the database');
+
+        //     foreach (new \RecursiveIteratorIterator($filter) as $file) { 
+        //         $pathname = $file->getPathname();
+
+        //         if($file->isFile()) {
+        //             $filename = $file->getFileName();
+        //             $class = substr($filename, 0, strlen($filename) - 4); 
+                    
+        //             if(is_readable($pathname)) {
+        //                 require database_path("/seeders/$class.php");
+
+        //                 $classNs = "\Database\Seeders\\$class";
+        //                 $seeder = new $classNs;
+
+        //                 $this->writeln('Running ' . $class);
+
+        //                 if ( $this->runSeed($seeder) ) {
+        //                     $this->writeln('success');
+        //                 } else {
+        //                     $this->writeln('failure');
+        //                 }
+        //             }
+        //         }
+        //     }
+
+        //     return true;
+
+        // } catch(\PDOException $e) {
+        //     $this->writeln($e->getMessage(), false);
+        //     return false;
+        // }
     }
 
     /**
@@ -417,7 +448,42 @@ class Tonka
             }
         }
 
-        return $xdt->close(); 
+        /**
+         * Set seeders priority
+         */
+        $seeders_dir = new \RecursiveDirectoryIterator( database_path('/seeders') );
+        $filter = new RecursiveFilter($seeders_dir);
+        $filter->setPattern("\\.php$");
+
+        $seeders = [];
+
+        foreach (new \RecursiveIteratorIterator($filter) as $file) { 
+            $pathname = $file->getPathname();
+            
+            if($file->isFile()) {
+                $filename = $file->getFileName();
+                $class = substr($filename, 0, strlen($filename) - 4); 
+                
+                if(is_readable($pathname)) {
+                    
+                    $classNs = "\Database\Seeders\\$class";
+                    
+                    if ($attributes = (new \ReflectionClass($classNs))->getAttributes(\Clicalmani\Database\Factory\Priority::class)) {
+                        $attribute = $attributes[0];
+                        $instance = $attribute->newInstance();
+                        $seeders[(int)$instance->priority] = $classNs;
+                    }
+                }
+            }
+        }
+
+        ksort($seeders);
+
+        foreach ($seeders as $seeder) {
+            $xdt->getDocumentRootElement()->append('<seeder name="' . $seeder . '"/>');
+        }
+        
+        return $xdt->close();
     }
 
     /**

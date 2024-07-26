@@ -100,7 +100,7 @@ class RequestController extends HttpRequest
 		
 		if ($route = (new \Clicalmani\Routing\Builder)->build()) {
 			
-			$this->route      = $route;
+			$this->route = $route;
 
 			// Redirect
 			if ($route->redirect) $this->redirect();
@@ -109,7 +109,7 @@ class RequestController extends HttpRequest
 			
 			Cache::currentRoute($route);
 			
-			if ( $response_code = $route->isAuthorized($request) AND 200 !== $response_code) {
+			if ( $response_code = $route->isAuthorized($request) AND 200 !== $response_code ) {
 				
 				switch($response_code) {
 					case 401: $this->sendStatus($response_code, 'UNAUTHORIZED_REQUEST_ERROR', 'Request Unauthorized'); break;
@@ -337,7 +337,6 @@ class RequestController extends HttpRequest
 	private function bindResource(mixed $resource, mixed $controller, mixed $method) : mixed
 	{
 		$request = new Request;
-		$obj     = new $resource;
 		$reflect = new RequestReflection($controller, $method);
 		
 		$params_types = $reflect->getParamsTypes();

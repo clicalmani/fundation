@@ -115,6 +115,16 @@ abstract class ServiceProvider
         return @ static::$http_kernel[$gateway][$name];
     }
 
+    /**
+     * Returns app config
+     * 
+     * @return array
+     */
+    public static function getAppConfig() : array
+    {
+        return static::$app;
+    }
+
     private static function getServiceProviders()
     {
         return @ static::$app['providers'] ?? [];

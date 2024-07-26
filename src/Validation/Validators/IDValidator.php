@@ -42,7 +42,7 @@ class IDValidator extends InputValidator
 
     public function validate(mixed &$value, ?array $options = []) : bool
     {
-        $this->model = "\\App\\Models\\" . $options['model'];
+        $this->model = trim("\\App\\Models\\" . $options['model']);
         /** @var \Clicalmani\Database\Factory\Models\Model */
         $instance = $this->model::find($value);
         $this->primaryKey = @ $options['primary'] ? $options['primary']: $instance->getKey();
@@ -50,9 +50,9 @@ class IDValidator extends InputValidator
         if ( class_exists($this->model) ) {
             
             if ( is_array($this->primaryKey) ) $value = explode(',', $value);
-
-            if (NULL === $this->model::find($value)) return false;
-
+            
+            if ('null' === json_encode($this->model::find($value))) return false;
+            
             return true;  
         }
 
