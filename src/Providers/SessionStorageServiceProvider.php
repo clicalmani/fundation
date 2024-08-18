@@ -1,6 +1,12 @@
 <?php
 namespace Clicalmani\Fundation\Providers;
 
+/**
+ * SessionStorageServiceProvider Class
+ * 
+ * @package clicalmani/fundation 
+ * @author @clicalmani
+ */
 abstract class SessionStorageServiceProvider extends ServiceProvider
 {
     /**
@@ -22,7 +28,7 @@ abstract class SessionStorageServiceProvider extends ServiceProvider
      * 
      * @var int
      */
-    protected static $lifetime = 200;
+    protected static $lifetime = 10;
 
     /**
      * Here you may specify the maximum number of minutes that you wish the session
@@ -30,7 +36,7 @@ abstract class SessionStorageServiceProvider extends ServiceProvider
      * 
      * @var int
      */
-    protected static $max_lifetime = 1800;
+    protected static $max_lifetime = 20;
 
     /**
      * If you want session to immediately expire on the browser closing, set that option.
@@ -62,9 +68,9 @@ abstract class SessionStorageServiceProvider extends ServiceProvider
      * connection that should be used to manage these sessions. This should
      * correspond to a connection in your database configuration options.
      * 
-     * @var array
+     * @var string
      */
-    protected static $connection = [];
+    protected static $connection = 'mysql';
 
     /**
      * When using the "database" session driver, you may specify the table we
@@ -136,44 +142,63 @@ abstract class SessionStorageServiceProvider extends ServiceProvider
             'session.gc_probability' => static::$lotery[0],
             'session.gc_divisor    ' => static::$lotery[1],
             'session.gc_maxlifetime' => static::$max_lifetime,
-            'session.cache_limiter' => 'nocache'
+            'session.cache_limiter' => 'nocache',
+            'session.use_strict_mode' => 1
         ];
 
-        foreach ($config as $k => $v) ini_set($k, $v);
+        if (FALSE === inConsoleMode())
+            foreach ($config as $k => $v) ini_set($k, $v);
     }
 
     public function boot(): void
     {
-        // Start a session
-        if (session_status() === PHP_SESSION_NONE) {
-            
-            session_set_save_handler(new static::$driver(static::$lifetime, static::$max_lifetime), true);
-            register_shutdown_function('session_write_close');
-            session_start();
+        if (FALSE === inConsoleMode()) 
+            // Start a session
+            if (session_status() === PHP_SESSION_NONE) {
+                
+                session_set_save_handler(
+                    new static::$driver(static::$encrypt, [
+                        'table' => env('DB_TABLE_PREFIX') . static::$table,
+                        'driver' => static::$connection
+                    ]), 
+                    true
+                );
+                register_shutdown_function('session_write_close');
+                session_start();
+                
+                $_SESSION['_IDLE'] = @$_SESSION['_IDLE'] ?? time();
+                $_SESSION['_LAST_ACTIVITY'] = @$_SESSION['_LAST_ACTIVITY'] ?? time();
+                setcookie(
+                    static::$cookie['name'],
+                    session_id(),
+                    time() + static::$max_lifetime,
+                    static::$cookie['path'],
+                    static::$cookie['domain'],
+                    static::$cookie['secure'],
+                    static::$cookie['http_only']
+                );
+                
+                if (isset($_SESSION['_LAST_ACTIVITY']) && (time() - $_SESSION['_LAST_ACTIVITY'] > static::$max_lifetime)) {
+                    // last request was more than $lifetime seconds ago
+                    session_unset();     // unset $_SESSION variable for the run-time 
+                    session_destroy();   // destroy session data in storage
+                }
+                
+                if (isset($_SESSION['_IDLE']) && (time() - $_SESSION['_IDLE'] > static::$lifetime)) {
+                    // session started more than $max_lifetime seconds ago
+                    session_regenerate_id(true);  // change session ID for the current session and invalidate old session ID
+                    $_SESSION['_IDLE'] = time();  // update creation time
+                }
+            }
+    }
 
-            $_SESSION['_IDLE'] = @$_SESSION['_IDLE'] ?? time();
-            $_SESSION['_LAST_ACTIVITY'] = @$_SESSION['_LAST_ACTIVITY'] ?? time();
-            setcookie(
-                static::$cookie['name'],
-                session_id(),
-                time() + static::$max_lifetime,
-                static::$cookie['path'],
-                static::$cookie['domain'],
-                static::$cookie['secure'],
-                static::$cookie['http_only']
-            );
-            
-            if (isset($_SESSION['_LAST_ACTIVITY']) && time() - $_SESSION['_LAST_ACTIVITY'] > static::$max_lifetime) {
-                // last request was more than $lifetime seconds ago
-                session_unset();     // unset $_SESSION variable for the run-time 
-                session_destroy();   // destroy session data in storage
-            }
-            
-            if (isset($_SESSION['_IDLE']) && (time() - $_SESSION['_IDLE'] > static::$lifetime)) {
-                // session started more than $max_lifetime seconds ago
-                session_regenerate_id(true);  // change session ID for the current session and invalidate old session ID
-                $_SESSION['_IDLE'] = time();  // update creation time
-            }
-        }
+    /**
+     * Returns session table
+     * 
+     * @return string
+     */
+    public static function getTable() : string
+    {
+        return static::$table;
     }
 }

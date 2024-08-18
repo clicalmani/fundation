@@ -45,13 +45,13 @@ class IDValidator extends InputValidator
         $this->model = trim("\\App\\Models\\" . $options['model']);
         /** @var \Clicalmani\Database\Factory\Models\Model */
         $instance = $this->model::find($value);
-        $this->primaryKey = @ $options['primary'] ? $options['primary']: $instance->getKey();
+        $this->primaryKey = @ $options['primary'] ? $options['primary']: $instance?->getKey();
         
         if ( class_exists($this->model) ) {
             
             if ( is_array($this->primaryKey) ) $value = explode(',', $value);
             
-            if ('null' === json_encode($this->model::find($value))) return false;
+            if (NULL === $this->model::where("$this->primaryKey = :key", ['key' => $value])->first()) return false;
             
             return true;  
         }

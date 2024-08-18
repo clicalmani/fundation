@@ -7,12 +7,6 @@ namespace Clicalmani\Fundation\Http\Session;
 class FileSessionHandler extends SessionHandler
 {
     private string $savePath;
-    private string $id;
-
-    public function __construct(private int $lifetime, private int $max_lifetime)
-    {
-        
-    }
 
     public function open(string $path, string $name): bool
     {
@@ -27,13 +21,12 @@ class FileSessionHandler extends SessionHandler
     #[\ReturnTypeWillChange]
     public function read(string $id): string|false
     {
-        return (string)@file_get_contents("$this->savePath/sess_$id");
+        return (string)$this->decrypt((string)@file_get_contents("$this->savePath/sess_$id"));
     }
 
     public function write(string $id, string $data): bool
     {
-        $this->id = $id;
-        return file_put_contents("$this->savePath/sess_$id", $data) === false ? false : true;
+        return file_put_contents("$this->savePath/sess_$id", $this->encrypt($data)) === false ? false : true;
     }
 
     public function destroy($id): bool
@@ -56,5 +49,21 @@ class FileSessionHandler extends SessionHandler
         }
 
         return true;
+    }
+
+    #[\ReturnTypeWillChange]
+    public function create_sid()
+    {
+        return (string)session_create_id($this->getIdPrefix());
+    }
+
+    public function validate_sid(string $id)
+    {
+        $file = "$this->savePath/sess_$id";
+        if (file_exists($file)) {
+            return true;
+        }
+
+        return false;
     }
 }

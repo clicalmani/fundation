@@ -5,7 +5,7 @@ class Sandbox
 {
     private static $tmp_name = '__.php';
 
-    public static function eval($exec, $args) {
+    public static function eval(string $exec, ?array $args = []) {
         $args     = serialize($args);
 
         $content = <<<EVAL
@@ -15,9 +15,7 @@ class Sandbox
         ARGS;
         extract(unserialize(\$serialized));
 
-        return <<<DELIMITER
-            $exec
-        DELIMITER;
+        return $exec;
         EVAL;
         
         return self::getResult($content);

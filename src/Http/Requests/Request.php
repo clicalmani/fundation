@@ -311,17 +311,15 @@ class Request implements RequestInterface, \ArrayAccess, \JsonSerializable
     /**
      * Get or set session
      * 
-     * @param string $entry Session entry
-     * @param ?string $value Entry value
-     * @return mixed
+     * @return object
      */
-    public function session(string $entry, ?string $value = null) : mixed
+    public function session() : object
     {
-        if ( isset($value) ) {
-            return $_SESSION[$entry] = $value;
-        }
-
-        return isset( $_SESSION[$entry] ) ? $_SESSION[$entry]: null;
+        return new class {
+            public function token() { return csrf_token(); }
+            public function __get(string $name) { return @$_SESSION[$name]; } 
+            public function __set(string $name, mixed $value) { return $_SESSION[$name] = $value; }
+        };
     }
 
     /**
